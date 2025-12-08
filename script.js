@@ -1,4 +1,4 @@
-// This will handle the API key submission and interaction with Mistral API
+// This will handle the API key submission and interaction with Mistral and OpenWeatherMap APIs
 document.getElementById('autofillLocation').addEventListener('click', function() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
@@ -29,17 +29,27 @@ document.getElementById('submitKey').addEventListener('click', function() {
         sessionStorage.setItem('mistralApiKey', apiKey);
         sessionStorage.setItem('location', location);
 
-        // Simulate API call with a timeout
-        setTimeout(function() {
-            // Hide loading animation
-            loadingElement.style.display = 'none';
+        // First, get weather data from OpenWeatherMap API
+        // Note: Replace 'YOUR_OPENWEATHERMAP_API_KEY' with your actual API key
+        const openWeatherMapApiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
+        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${openWeatherMapApiKey}&units=metric`;
 
-            // Display prediction result
-            predictionResultElement.innerHTML = `<p>Predicting snow days for ${location} using Mistral API...</p>`;
-
-            // Here you would typically redirect to another page or update the UI
-            // window.location.href = 'prediction.html';
-        }, 2000);
+        fetch(weatherUrl)
+            .then(response => response.json())
+            .then(data => {
+                console.log('Weather data:', data);
+                // Here you would typically process the weather data and send it to the Mistral API
+                // For now, we'll just display the weather data
+                predictionResultElement.innerHTML = `<p>Weather data for ${location}: ${JSON.stringify(data)}</p>`;
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+                predictionResultElement.innerHTML = `<p>Error fetching weather data: ${error.message}</p>`;
+            })
+            .finally(() => {
+                // Hide loading animation
+                loadingElement.style.display = 'none';
+            });
     } else {
         alert('Please enter both your location and API key.');
     }
