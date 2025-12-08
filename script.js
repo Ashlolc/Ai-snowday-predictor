@@ -2,13 +2,29 @@
 document.getElementById('submitKey').addEventListener('click', function() {
     const location = document.getElementById('location').value;
     const apiKey = document.getElementById('apiKey').value;
+    const loadingElement = document.getElementById('loading');
+    const predictionResultElement = document.getElementById('predictionResult');
+
     if (apiKey && location) {
+        // Show loading animation
+        loadingElement.style.display = 'block';
+        predictionResultElement.innerHTML = '';
+
         // Store the API key and location in sessionStorage
         sessionStorage.setItem('mistralApiKey', apiKey);
         sessionStorage.setItem('location', location);
-        alert('API key and location stored in this session. You can now use the predictor.');
-        // Here you would typically redirect to another page or update the UI
-        window.location.href = 'prediction.html';
+
+        // Simulate API call with a timeout
+        setTimeout(function() {
+            // Hide loading animation
+            loadingElement.style.display = 'none';
+
+            // Display prediction result
+            predictionResultElement.innerHTML = `<p>Predicting snow days for ${location} using Mistral API...</p>`;
+
+            // Here you would typically redirect to another page or update the UI
+            // window.location.href = 'prediction.html';
+        }, 2000);
     } else {
         alert('Please enter both your location and API key.');
     }
