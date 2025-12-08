@@ -1,4 +1,32 @@
 // This will handle the API key submission and interaction with Mistral and Open-Meteo APIs
+document.getElementById('autofillLocation').addEventListener('click', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
+
+            fetch(nominatimUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.display_name) {
+                        document.getElementById('location').value = data.display_name;
+                    } else {
+                        document.getElementById('location').value = `${latitude}, ${longitude}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching location data:', error);
+                    document.getElementById('location').value = `${latitude}, ${longitude}`;
+                });
+        }, function(error) {
+            alert('Error getting location: ' + error.message);
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+});
+
 document.getElementById('submitKey').addEventListener('click', function() {
     const location = document.getElementById('location').value;
     const apiKey = document.getElementById('apiKey').value;
