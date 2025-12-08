@@ -1,14 +1,4 @@
-// Initialize Google Place Autocomplete
-function initAutocomplete() {
-    const locationInput = document.getElementById('location');
-    const autocomplete = new google.maps.places.Autocomplete(locationInput);
-}
-
-// This will handle the API key submission and interaction with Mistral and NOAA APIs
-document.addEventListener('DOMContentLoaded', function() {
-    initAutocomplete();
-});
-
+// This will handle the API key submission and interaction with Mistral and Open-Meteo APIs
 document.getElementById('submitKey').addEventListener('click', function() {
     const location = document.getElementById('location').value;
     const apiKey = document.getElementById('apiKey').value;
@@ -24,26 +14,20 @@ document.getElementById('submitKey').addEventListener('click', function() {
         sessionStorage.setItem('mistralApiKey', apiKey);
         sessionStorage.setItem('location', location);
 
-        // First, get weather warnings from NOAA API
-        // Note: Replace 'YOUR_NOAA_API_KEY' with your actual API key
-        const noaaApiKey = 'YOUR_NOAA_API_KEY';
-        const noaaUrl = `https://api.weather.gov/alerts/active?area=${location}`;
+        // First, get weather data from Open-Meteo API
+        const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
 
-        fetch(noaaUrl, {
-            headers: {
-                'User-Agent': 'Ai-snowday-predictor'
-            }
-        })
+        fetch(openMeteoUrl)
             .then(response => response.json())
             .then(data => {
-                console.log('NOAA weather warnings:', data);
-                // Here you would typically process the weather warnings and send them to the Mistral API
-                // For now, we'll just display the weather warnings
-                predictionResultElement.innerHTML = `<p>Weather warnings for ${location}: ${JSON.stringify(data)}</p>`;
+                console.log('Open-Meteo weather data:', data);
+                // Here you would typically process the weather data and send it to the Mistral API
+                // For now, we'll just display the weather data
+                predictionResultElement.innerHTML = `<p>Weather data for ${location}: ${JSON.stringify(data)}</p>`;
             })
             .catch(error => {
-                console.error('Error fetching weather warnings:', error);
-                predictionResultElement.innerHTML = `<p>Error fetching weather warnings: ${error.message}</p>`;
+                console.error('Error fetching weather data:', error);
+                predictionResultElement.innerHTML = `<p>Error fetching weather data: ${error.message}</p>`;
             })
             .finally(() => {
                 // Hide loading animation
