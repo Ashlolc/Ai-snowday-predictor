@@ -1,4 +1,19 @@
 // This will handle the API key submission and interaction with Mistral API
+document.getElementById('autofillLocation').addEventListener('click', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            // Use a reverse geocoding service to get the location name from coordinates
+            // For simplicity, we'll just display the coordinates here
+            const location = `${position.coords.latitude}, ${position.coords.longitude}`;
+            document.getElementById('location').value = location;
+        }, function(error) {
+            alert('Error getting location: ' + error.message);
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+});
+
 document.getElementById('submitKey').addEventListener('click', function() {
     const location = document.getElementById('location').value;
     const apiKey = document.getElementById('apiKey').value;
