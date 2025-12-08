@@ -7,6 +7,17 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <style>
+        .snowflake {
+            font-size: 2em;
+            animation: spin 2s linear infinite;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
     <div class="container animate__animated animate__fadeIn">
@@ -15,6 +26,7 @@
         <input type="text" id="location" placeholder="Enter your location">
         <input type="password" id="apiKey" placeholder="Enter your Mistral API key">
         <button id="submitKey">Submit</button>
+        <div id="loading" class="snowflake">❄️</div>
         <div id="predictionResult"></div>
     </div>
     <script src="script.js"></script>
