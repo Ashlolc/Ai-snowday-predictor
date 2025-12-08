@@ -1,17 +1,12 @@
-// This will handle the API key submission and interaction with Mistral and OpenWeatherMap APIs
-document.getElementById('autofillLocation').addEventListener('click', function() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(function(position) {
-            // Use a reverse geocoding service to get the location name from coordinates
-            // For simplicity, we'll just display the coordinates here
-            const location = `${position.coords.latitude}, ${position.coords.longitude}`;
-            document.getElementById('location').value = location;
-        }, function(error) {
-            alert('Error getting location: ' + error.message);
-        });
-    } else {
-        alert('Geolocation is not supported by this browser.');
-    }
+// Initialize Google Place Autocomplete
+function initAutocomplete() {
+    const locationInput = document.getElementById('location');
+    const autocomplete = new google.maps.places.Autocomplete(locationInput);
+}
+
+// This will handle the API key submission and interaction with Mistral and NOAA APIs
+document.addEventListener('DOMContentLoaded', function() {
+    initAutocomplete();
 });
 
 document.getElementById('submitKey').addEventListener('click', function() {
@@ -29,22 +24,26 @@ document.getElementById('submitKey').addEventListener('click', function() {
         sessionStorage.setItem('mistralApiKey', apiKey);
         sessionStorage.setItem('location', location);
 
-        // First, get weather data from OpenWeatherMap API
-        // Note: Replace 'YOUR_OPENWEATHERMAP_API_KEY' with your actual API key
-        const openWeatherMapApiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
-        const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=${openWeatherMapApiKey}&units=metric`;
+        // First, get weather warnings from NOAA API
+        // Note: Replace 'YOUR_NOAA_API_KEY' with your actual API key
+        const noaaApiKey = 'YOUR_NOAA_API_KEY';
+        const noaaUrl = `https://api.weather.gov/alerts/active?area=${location}`;
 
-        fetch(weatherUrl)
+        fetch(noaaUrl, {
+            headers: {
+                'User-Agent': 'Ai-snowday-predictor'
+            }
+        })
             .then(response => response.json())
             .then(data => {
-                console.log('Weather data:', data);
-                // Here you would typically process the weather data and send it to the Mistral API
-                // For now, we'll just display the weather data
-                predictionResultElement.innerHTML = `<p>Weather data for ${location}: ${JSON.stringify(data)}</p>`;
+                console.log('NOAA weather warnings:', data);
+                // Here you would typically process the weather warnings and send them to the Mistral API
+                // For now, we'll just display the weather warnings
+                predictionResultElement.innerHTML = `<p>Weather warnings for ${location}: ${JSON.stringify(data)}</p>`;
             })
             .catch(error => {
-                console.error('Error fetching weather data:', error);
-                predictionResultElement.innerHTML = `<p>Error fetching weather data: ${error.message}</p>`;
+                console.error('Error fetching weather warnings:', error);
+                predictionResultElement.innerHTML = `<p>Error fetching weather warnings: ${error.message}</p>`;
             })
             .finally(() => {
                 // Hide loading animation
