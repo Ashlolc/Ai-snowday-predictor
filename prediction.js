@@ -1,4 +1,4 @@
-console.log('%c🔥 Prediction.js loaded - Version 6.1 Enhanced Error Handling', 'color: #667eea; font-weight: bold; font-size: 14px;');
+console.log('%c🔥 Prediction.js loaded - Version 6.2 Enhanced with Delay/Early Dismissal', 'color: #667eea; font-weight: bold; font-size: 14px;');
 
 // Progress tracking
 let currentProgress = 0;
@@ -172,7 +172,7 @@ async function getWeatherData(latitude, longitude) {
     }
 }
 
-// AI Analysis
+// AI Analysis with 2-hour delay and early dismissal predictions
 async function analyzeSnowDayChance(city, state, weatherData, apiKey) {
     logSuccess(`Starting Mistral AI analysis`);
     setProgress(70, 3, '🤖 Sending weather data to Mistral AI...');
@@ -184,37 +184,64 @@ async function analyzeSnowDayChance(city, state, weatherData, apiKey) {
             weatherSummary.push({
                 day: i + 1,
                 date: weatherData.daily.time[i],
-                maxTemp: weatherData.daily.temperature_2m_max[i],
-                minTemp: weatherData.daily.temperature_2m_min[i],
-                precipitation: weatherData.daily.precipitation_sum[i],
-                snowfall: weatherData.daily.snowfall_sum[i],
-                windSpeed: weatherData.daily.wind_speed_10m_max[i]
+                maxTemp: weatherData.daily.temperature_2m_max[i] + '°F',
+                minTemp: weatherData.daily.temperature_2m_min[i] + '°F',
+                precipitation: weatherData.daily.precipitation_sum[i] + ' inches',
+                snowfall: weatherData.daily.snowfall_sum[i] + ' inches',
+                windSpeed: weatherData.daily.wind_speed_10m_max[i] + ' mph'
             });
         }
         
         logSuccess(`Weather summary prepared for AI`);
         
-        const prompt = `You are an expert meteorologist specializing in snow day predictions. Analyze this 7-day forecast for ${city}, ${state}:
+        const prompt = `You are an expert school district meteorologist specializing in closure and delay decisions. Analyze this 7-day forecast for ${city}, ${state}:
 
 ${JSON.stringify(weatherSummary, null, 2)}
 
-Provide:
-1. **Snow Day Probability** (0-100%)
-2. **Most Likely Day** for snow
-3. **Analysis** of temperatures, snowfall, wind
-4. **School Closure Factors** (accumulation, ice, visibility)
-5. **Confidence Level**
+Provide a COMPREHENSIVE analysis with these EXACT sections:
 
-Be specific and data-driven.`;
+## 🚫 FULL SNOW DAY
+- **Probability**: [0-100%]
+- **Most Likely Day**: [Which day and date]
+- **Reasoning**: [Why full closure would happen]
+
+## ⏰ 2-HOUR DELAY
+- **Probability**: [0-100%]
+- **Most Likely Day**: [Which day and date]
+- **Reasoning**: [Why 2-hour delay would happen - consider morning conditions, ice on roads, visibility]
+
+## 🏫 EARLY DISMISSAL (2-HOUR EARLY)
+- **Probability**: [0-100%]
+- **Most Likely Day**: [Which day and date]
+- **Reasoning**: [Why early dismissal would happen - consider afternoon storms, deteriorating conditions]
+
+## 🌨️ WEATHER ANALYSIS
+- Key factors: temperature trends, snowfall accumulation, wind conditions
+- Most concerning day and why
+- Road condition predictions (ice, snow depth, visibility)
+
+## 📊 DECISION FACTORS
+- Snow accumulation thresholds (2-hour delay: 2-4", full closure: 6+")
+- Ice/freezing rain impact
+- Visibility concerns
+- Wind chill and safety
+
+## 🎯 CONFIDENCE LEVEL
+[Low/Medium/High] - Explain why
+
+Be specific, data-driven, and realistic for Minnesota winter conditions.`;
         
         const requestBody = {
             model: 'mistral-small-latest',
             messages: [
-                { role: 'system', content: 'You are a professional weather forecaster for school closures.' },
+                { 
+                    role: 'system', 
+                    content: 'You are a professional school district weather analyst who makes recommendations for closures, delays, and early dismissals. Be thorough and consider all scenarios.'
+                },
                 { role: 'user', content: prompt }
             ],
             temperature: 0.5,
-            max_tokens: 800
+            max_tokens: 1200
         };
         
         logSuccess(`Calling Mistral API with model: mistral-small-latest`);
@@ -340,14 +367,15 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Display results
         predictionResult.innerHTML = `
             <div class="result-box">
-                <h2>❄️ Snow Day Analysis</h2>
+                <h2>❄️ Snow Day & Delay Predictions</h2>
                 <p style="color: #667eea; font-weight: 600; font-size: 1.05em;">${city}, ${state}</p>
                 <hr>
                 <div style="white-space: pre-wrap; line-height: 1.8; color: #555;">${escapeHtml(analysis)}</div>
                 <hr>
                 <p style="color: #999; font-size: 0.9em; margin-top: 15px;">
-                    📚 Data: Open-Meteo API | 🤖 AI: Mistral (mistral-small-latest)<br>
-                    📍 Location: ${coordinates.name}, ${coordinates.state}
+                    📚 Data: Open-Meteo Weather API | 🤖 AI: Mistral (mistral-small-latest)<br>
+                    📍 Location: ${coordinates.name}, ${coordinates.state}<br>
+                    🎯 Analysis includes: Full closure, 2-hour delay, and early dismissal predictions
                 </p>
             </div>
         `;
