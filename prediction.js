@@ -1,4 +1,4 @@
-console.log('%c🔥 Prediction.js loaded - Version 6.2 Enhanced with Delay/Early Dismissal', 'color: #667eea; font-weight: bold; font-size: 14px;');
+console.log('%c🔥 Prediction.js loaded - Version 7.0 MISTRAL LARGE UPGRADE', 'color: #667eea; font-weight: bold; font-size: 14px;');
 
 // Progress tracking
 let currentProgress = 0;
@@ -7,7 +7,7 @@ let timeoutHandle;
 let animationInterval;
 let errorLog = [];
 
-const TIMEOUT_MS = 30000; // 30 seconds
+const TIMEOUT_MS = 45000; // 45 seconds (Mistral Large takes longer)
 
 // Add visible error logging
 function logError(message) {
@@ -144,7 +144,7 @@ async function getWeatherData(latitude, longitude) {
         const lat = parseFloat(latitude).toFixed(4);
         const lon = parseFloat(longitude).toFixed(4);
         
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=7`;
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_speed_10m_max,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=7`;
         
         logSuccess(`Weather API URL: ${weatherUrl}`);
         
@@ -172,10 +172,10 @@ async function getWeatherData(latitude, longitude) {
     }
 }
 
-// AI Analysis with 2-hour delay and early dismissal predictions
+// AI Analysis with MISTRAL LARGE and chain-of-thought reasoning
 async function analyzeSnowDayChance(city, state, weatherData, apiKey) {
-    logSuccess(`Starting Mistral AI analysis`);
-    setProgress(70, 3, '🤖 Sending weather data to Mistral AI...');
+    logSuccess(`Starting Mistral LARGE AI analysis with enhanced reasoning`);
+    setProgress(70, 3, '🧠 Mistral LARGE analyzing with chain-of-thought...');
     animateProgressToMax();
     
     try {
@@ -184,68 +184,108 @@ async function analyzeSnowDayChance(city, state, weatherData, apiKey) {
             weatherSummary.push({
                 day: i + 1,
                 date: weatherData.daily.time[i],
-                maxTemp: weatherData.daily.temperature_2m_max[i] + '°F',
-                minTemp: weatherData.daily.temperature_2m_min[i] + '°F',
-                precipitation: weatherData.daily.precipitation_sum[i] + ' inches',
-                snowfall: weatherData.daily.snowfall_sum[i] + ' inches',
-                windSpeed: weatherData.daily.wind_speed_10m_max[i] + ' mph'
+                maxTemp: Math.round(weatherData.daily.temperature_2m_max[i]) + '°F',
+                minTemp: Math.round(weatherData.daily.temperature_2m_min[i]) + '°F',
+                precipitation: weatherData.daily.precipitation_sum[i].toFixed(2) + ' inches',
+                snowfall: weatherData.daily.snowfall_sum[i].toFixed(2) + ' inches',
+                windSpeed: Math.round(weatherData.daily.wind_speed_10m_max[i]) + ' mph',
+                weatherCode: weatherData.daily.weather_code[i]
             });
         }
         
-        logSuccess(`Weather summary prepared for AI`);
+        logSuccess(`Weather summary prepared for Mistral LARGE`);
         
-        const prompt = `You are an expert school district meteorologist specializing in closure and delay decisions. Analyze this 7-day forecast for ${city}, ${state}:
+        const prompt = `You are an expert meteorological analyst for ${city}, ${state} school district. Use chain-of-thought reasoning to analyze this 7-day forecast and predict school closures, delays, and early dismissals.
 
+**WEATHER DATA:**
 ${JSON.stringify(weatherSummary, null, 2)}
 
-Provide a COMPREHENSIVE analysis with these EXACT sections:
+**ANALYSIS INSTRUCTIONS:**
+Use step-by-step reasoning. Think through each scenario carefully:
 
-## 🚫 FULL SNOW DAY
-- **Probability**: [0-100%]
-- **Most Likely Day**: [Which day and date]
-- **Reasoning**: [Why full closure would happen]
+1. **Analyze Each Day Individually**
+   - Examine temperature ranges (freezing = ice risk)
+   - Assess snowfall accumulation (light/moderate/heavy)
+   - Consider wind speed (visibility, wind chill)
+   - Evaluate timing (overnight vs morning vs afternoon)
 
-## ⏰ 2-HOUR DELAY
-- **Probability**: [0-100%]
-- **Most Likely Day**: [Which day and date]
-- **Reasoning**: [Why 2-hour delay would happen - consider morning conditions, ice on roads, visibility]
+2. **Consider Minnesota-Specific Factors**
+   - Road crews are experienced but need time
+   - Schools close for: 6+ inches OR ice/freezing rain OR extreme cold (-20°F wind chill)
+   - 2-hour delays for: 2-4 inches OR morning ice OR poor visibility
+   - Early dismissal for: afternoon storm arrival OR deteriorating conditions
 
-## 🏫 EARLY DISMISSAL (2-HOUR EARLY)
-- **Probability**: [0-100%]
-- **Most Likely Day**: [Which day and date]
-- **Reasoning**: [Why early dismissal would happen - consider afternoon storms, deteriorating conditions]
+3. **Chain-of-Thought Reasoning Process:**
+   For each potential closure type, reason through:
+   a) What conditions are present?
+   b) What is the timing?
+   c) How severe is it compared to thresholds?
+   d) What would district administrators decide?
 
-## 🌨️ WEATHER ANALYSIS
-- Key factors: temperature trends, snowfall accumulation, wind conditions
-- Most concerning day and why
-- Road condition predictions (ice, snow depth, visibility)
+**PROVIDE COMPREHENSIVE OUTPUT:**
 
-## 📊 DECISION FACTORS
-- Snow accumulation thresholds (2-hour delay: 2-4", full closure: 6+")
-- Ice/freezing rain impact
-- Visibility concerns
-- Wind chill and safety
+## 🚫 FULL SNOW DAY ANALYSIS
+**Probability:** [0-100%]
+**Most Likely Day:** [Day # and Date]
+**Reasoning:**
+- Step 1: [Identify snowfall amount]
+- Step 2: [Assess timing - overnight accumulation?]
+- Step 3: [Evaluate road clearing feasibility]
+- Step 4: [Consider safety factors]
+**Decision:** [Final reasoning for closure]
 
-## 🎯 CONFIDENCE LEVEL
-[Low/Medium/High] - Explain why
+## ⏰ 2-HOUR DELAY ANALYSIS
+**Probability:** [0-100%]
+**Most Likely Day:** [Day # and Date]
+**Reasoning:**
+- Step 1: [Morning condition assessment]
+- Step 2: [Road clearing status by 9am]
+- Step 3: [Ice vs snow considerations]
+- Step 4: [Bus route safety]
+**Decision:** [Final reasoning for delay]
 
-Be specific, data-driven, and realistic for Minnesota winter conditions.`;
+## 🏫 EARLY DISMISSAL ANALYSIS (2-HOUR EARLY)
+**Probability:** [0-100%]
+**Most Likely Day:** [Day # and Date]
+**Reasoning:**
+- Step 1: [Storm arrival time]
+- Step 2: [Rate of deterioration]
+- Step 3: [Afternoon vs evening timing]
+- Step 4: [Student safety getting home]
+**Decision:** [Final reasoning for early release]
+
+## 🌨️ DETAILED WEATHER BREAKDOWN
+[Day-by-day analysis of concerning conditions]
+
+## 📊 KEY DECISION FACTORS
+- **Temperature Impact:** [Freezing? Ice risk?]
+- **Accumulation:** [Total snowfall over period]
+- **Wind/Visibility:** [Blizzard conditions?]
+- **Timing:** [Overnight, morning, or afternoon?]
+
+## 🎯 CONFIDENCE ASSESSMENT
+**Confidence Level:** [Low/Medium/High]
+**Reasoning:** [Why confident or uncertain?]
+**Wild Cards:** [Unexpected factors that could change forecast]
+
+Be thorough, realistic, and use actual Minnesota school district decision-making patterns.`;
         
         const requestBody = {
-            model: 'mistral-small-latest',
+            model: 'mistral-large-latest',
             messages: [
                 { 
                     role: 'system', 
-                    content: 'You are a professional school district weather analyst who makes recommendations for closures, delays, and early dismissals. Be thorough and consider all scenarios.'
+                    content: 'You are a professional meteorological consultant specializing in school closure analysis. Use detailed chain-of-thought reasoning to provide comprehensive, data-driven predictions. Think step-by-step through each scenario.'
                 },
                 { role: 'user', content: prompt }
             ],
-            temperature: 0.5,
-            max_tokens: 1200
+            temperature: 0.3,
+            max_tokens: 2500,
+            top_p: 1
         };
         
-        logSuccess(`Calling Mistral API with model: mistral-small-latest`);
-        setProgress(75, 3, `⏳ Waiting for AI analysis...`);
+        logSuccess(`Calling Mistral API with model: mistral-large-latest`);
+        setProgress(75, 3, `⏳ Mistral LARGE reasoning through scenarios...`);
         
         const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
             method: 'POST',
@@ -277,8 +317,8 @@ Be specific, data-driven, and realistic for Minnesota winter conditions.`;
         }
         
         const analysis = data.choices[0].message.content;
-        logSuccess(`AI analysis complete!`);
-        setProgress(95, 3, `✓ Analysis complete!`);
+        logSuccess(`Mistral LARGE analysis complete!`);
+        setProgress(95, 3, `✓ Deep analysis complete!`);
         return analysis;
     } catch (error) {
         logError(`AI error: ${error.message}`);
@@ -288,7 +328,7 @@ Be specific, data-driven, and realistic for Minnesota winter conditions.`;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
-    logSuccess('Prediction page loaded');
+    logSuccess('Prediction page loaded - MISTRAL LARGE VERSION');
     
     const apiKey = sessionStorage.getItem('mistralApiKey');
     const state = sessionStorage.getItem('state');
@@ -309,11 +349,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     logSuccess(`Location: ${location}`);
     logSuccess(`API Key length: ${apiKey.length} characters`);
+    logSuccess(`Using Mistral LARGE with chain-of-thought reasoning`);
     locationDisplay.innerHTML = `<p style="font-size: 1.1em; color: #667eea; font-weight: 600;">📍 ${location}</p>`;
     
-    // Set timeout
+    // Set timeout (45 seconds for Mistral Large)
     timeoutHandle = setTimeout(() => {
-        logError('TIMEOUT: Analysis exceeded 30 seconds');
+        logError('TIMEOUT: Analysis exceeded 45 seconds');
         stopProgressAnimation();
         updateProgressBar(100);
         
@@ -321,13 +362,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         predictionResult.innerHTML = `
             <div class="error-box">
-                <h3>⏰ Request Timeout (30s)</h3>
-                <p>The prediction took too long.</p>
+                <h3>⏰ Request Timeout (45s)</h3>
+                <p>The prediction took too long. Mistral LARGE provides deeper analysis but needs more time.</p>
                 <p><strong>Possible causes:</strong></p>
                 <ul>
                     <li>🚫 Mistral API is slow/down</li>
                     <li>🌐 Slow internet connection</li>
                     <li>🔑 API key rate limited</li>
+                    <li>🧠 Complex reasoning taking longer</li>
                 </ul>
                 <details style="margin-top: 15px; background: #fff; padding: 10px; border-radius: 6px;">
                     <summary style="cursor: pointer; font-weight: 600;">🐛 Error Log (Click to expand)</summary>
@@ -341,7 +383,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }, TIMEOUT_MS);
     
     try {
-        logSuccess('Starting prediction workflow');
+        logSuccess('Starting prediction workflow with Mistral LARGE');
         setProgress(10, 1, '🙋 Initializing...');
         
         // Step 1: Geocode
@@ -350,7 +392,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Step 2: Weather
         const weatherData = await getWeatherData(coordinates.latitude, coordinates.longitude);
         
-        // Step 3: AI Analysis
+        // Step 3: AI Analysis with Mistral LARGE
         stopProgressAnimation();
         const analysis = await analyzeSnowDayChance(city, state, weatherData, apiKey);
         
@@ -367,20 +409,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Display results
         predictionResult.innerHTML = `
             <div class="result-box">
-                <h2>❄️ Snow Day & Delay Predictions</h2>
+                <h2>❄️ Advanced Snow Day Analysis</h2>
                 <p style="color: #667eea; font-weight: 600; font-size: 1.05em;">${city}, ${state}</p>
+                <p style="color: #764ba2; font-size: 0.9em; margin-bottom: 15px;">🧠 Powered by Mistral LARGE with chain-of-thought reasoning</p>
                 <hr>
                 <div style="white-space: pre-wrap; line-height: 1.8; color: #555;">${escapeHtml(analysis)}</div>
                 <hr>
                 <p style="color: #999; font-size: 0.9em; margin-top: 15px;">
-                    📚 Data: Open-Meteo Weather API | 🤖 AI: Mistral (mistral-small-latest)<br>
+                    📚 Weather: Open-Meteo API | 🧠 AI: Mistral LARGE (mistral-large-latest)<br>
                     📍 Location: ${coordinates.name}, ${coordinates.state}<br>
-                    🎯 Analysis includes: Full closure, 2-hour delay, and early dismissal predictions
+                    🎯 Analysis: Full closure, 2-hour delay, early dismissal + detailed reasoning
                 </p>
             </div>
         `;
         
-        logSuccess('Prediction complete!');
+        logSuccess('MISTRAL LARGE prediction complete!');
         
     } catch (error) {
         logError(`Final error: ${error.message}`);
@@ -398,7 +441,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                     <li>🔑 API key valid at <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a></li>
                     <li>📍 City selected from dropdown</li>
                     <li>🌐 Internet connection working</li>
-                    <li>📋 API not rate-limited</li>
+                    <li>📋 API not rate-limited (Mistral LARGE uses more quota)</li>
                 </ul>
                 <details style="margin-top: 15px; background: #fff; padding: 10px; border-radius: 6px;">
                     <summary style="cursor: pointer; font-weight: 600;">🐛 Full Error Log (Click to expand)</summary>
