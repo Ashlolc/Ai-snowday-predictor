@@ -7,81 +7,53 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>AI Snow Day Predictor</title>
-    <link rel="stylesheet" href="style.css?v=4">
-    <style>
-        .snowflake {
-            font-size: 3em;
-            animation: spin 2s linear infinite;
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .info-box {
-            background: #f0f8ff;
-            padding: 15px;
-            border-radius: 6px;
-            margin-top: 15px;
-            font-size: 0.9em;
-            color: #555;
-        }
-        .state-label, .city-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-bottom: 5px;
-            display: block;
-            text-align: left;
-        }
-        select {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
-            background-color: white;
-            cursor: pointer;
-        }
-        select:disabled {
-            background-color: #f0f0f0;
-            cursor: not-allowed;
-            color: #999;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css?v=6">
 </head>
 <body>
+    <!-- Background snowflakes -->
+    <div class="snowflake" style="left: 10%; animation: float 8s linear infinite;">❄️</div>
+    <div class="snowflake" style="left: 20%; animation: float 10s linear infinite 2s;">❄️</div>
+    <div class="snowflake" style="left: 30%; animation: float 12s linear infinite 4s;">❄️</div>
+    <div class="snowflake" style="left: 40%; animation: float 9s linear infinite 1s;">❄️</div>
+    <div class="snowflake" style="left: 50%; animation: float 11s linear infinite 3s;">❄️</div>
+    <div class="snowflake" style="left: 60%; animation: float 13s linear infinite 2.5s;">❄️</div>
+    <div class="snowflake" style="left: 70%; animation: float 10.5s linear infinite 1.5s;">❄️</div>
+    <div class="snowflake" style="left: 80%; animation: float 12.5s linear infinite 3.5s;">❄️</div>
+    <div class="snowflake" style="left: 90%; animation: float 9.5s linear infinite 2s;">❄️</div>
+
     <div class="container">
         <h1>❄️ AI Snow Day Predictor</h1>
         <p>Get AI-powered predictions for snow days in your area</p>
         
-        <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin: 15px 0; font-size: 0.9em;">
+        <div class="info-box">
             ⚠️ <strong>Get your Mistral API key:</strong> Visit <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a>
         </div>
 
-        <label class="state-label">Select State</label>
-        <select id="state">
-            <option value="">-- Choose a state --</option>
-        </select>
+        <div class="label-group">
+            <label class="state-label">📍 Select State</label>
+            <select id="state" aria-label="State selection">
+                <option value="">-- Choose a state --</option>
+            </select>
+        </div>
 
-        <label class="city-label">Select City</label>
-        <select id="city" disabled>
-            <option value="">-- Choose a state first --</option>
-        </select>
-        
-        <input type="password" id="apiKey" placeholder="Enter your Mistral API key" />
+        <div class="label-group">
+            <label class="city-label">🏙️ Select City</label>
+            <select id="city" disabled aria-label="City selection">
+                <option value="">-- Choose a state first --</option>
+            </select>
+        </div>
+
+        <div class="label-group">
+            <label class="api-label">🔑 Mistral API Key</label>
+            <input type="password" id="apiKey" placeholder="Enter your Mistral API key" aria-label="API key input" />
+        </div>
         
         <button id="submitKey">🔍 Analyze Weather</button>
         
-        <div id="loading" class="snowflake">❄️</div>
-        
-        <div class="info-box">
+        <div class="info-box" style="margin-top: 25px;">
             <strong>💡 How it works:</strong> Select your location and enter your API key. We'll fetch real weather data and use AI to predict snow days.
-            All API keys are stored only in your browser session and never sent to external servers.
         </div>
     </div>
-    <script src="script.js?v=4"></script>
+    <script src="script.js?v=6"></script>
 </body>
 </html>
