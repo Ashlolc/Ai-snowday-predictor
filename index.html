@@ -9,26 +9,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <style>
         .snowflake {
-            font-size: 2em;
+            font-size: 3em;
             animation: spin 2s linear infinite;
             display: none;
+            text-align: center;
+            margin: 20px 0;
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .info-box {
+            background: #f0f8ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+        button {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container animate__animated animate__fadeIn">
-        <h1>AI Snow Day Predictor</h1>
-        <p>Enter your location and Mistral API key:</p>
-        <input type="text" id="state" placeholder="Enter your state">
-        <input type="text" id="city" placeholder="Enter your city">
-        <input type="password" id="apiKey" placeholder="Enter your Mistral API key">
-        <button id="submitKey">Submit</button>
+        <h1>❄️ AI Snow Day Predictor</h1>
+        <p>Get AI-powered predictions for snow days in your area</p>
+        
+        <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin: 15px 0; font-size: 0.9em;">
+            ⚠️ <strong>Get your Mistral API key:</strong> Visit <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a>
+        </div>
+
+        <input type="text" id="state" placeholder="Enter your state (e.g., Minnesota)" />
+        <input type="text" id="city" placeholder="Enter your city (e.g., Sartell)" />
+        <input type="password" id="apiKey" placeholder="Enter your Mistral API key" />
+        
+        <button id="submitKey">🔍 Analyze Weather</button>
+        
         <div id="loading" class="snowflake">❄️</div>
         <div id="predictionResult"></div>
+        
+        <div class="info-box">
+            <strong>💡 How it works:</strong> We fetch real weather data for your location and use AI to analyze the chance of a snow day.
+            All API keys are stored only in your browser session and never sent to external servers.
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
