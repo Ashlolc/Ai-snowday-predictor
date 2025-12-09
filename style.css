@@ -16,6 +16,96 @@ body {
     overflow-x: hidden;
 }
 
+/* Mistral Large Credit Badge */
+.ai-credit {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    color: #666;
+    text-align: center;
+    line-height: 1.4;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    z-index: 1000;
+    animation: fadeInBounce 1s ease;
+}
+
+.ai-credit strong {
+    display: block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.1em;
+    font-weight: 700;
+}
+
+@keyframes fadeInBounce {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.8);
+    }
+    60% {
+        opacity: 1;
+        transform: translateY(5px) scale(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Day Navigation Buttons */
+.day-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    gap: 15px;
+}
+
+.nav-button {
+    flex: 1;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.nav-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.nav-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.nav-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #ccc;
+}
+
+.day-indicator {
+    text-align: center;
+    font-weight: 700;
+    color: #667eea;
+    font-size: 1.1em;
+    padding: 0 10px;
+}
+
 /* Animated background elements */
 body::before {
     content: '';
@@ -145,7 +235,7 @@ p {
     animation: fadeInDown 1s ease;
 }
 
-.state-label, .city-label, .api-label {
+.state-label, .city-label, .api-label, .forecast-label {
     font-size: 0.9em;
     color: #667eea;
     margin-bottom: 8px;
@@ -460,6 +550,13 @@ a:hover {
 }
 
 @media (max-width: 600px) {
+    .ai-credit {
+        top: 10px;
+        right: 10px;
+        font-size: 0.65em;
+        padding: 8px 12px;
+    }
+
     .container {
         padding: 25px;
     }
@@ -480,5 +577,18 @@ a:hover {
         width: 35px;
         height: 35px;
         font-size: 12px;
+    }
+
+    .day-navigation {
+        gap: 10px;
+    }
+
+    .nav-button {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+
+    .day-indicator {
+        font-size: 0.9em;
     }
 }
