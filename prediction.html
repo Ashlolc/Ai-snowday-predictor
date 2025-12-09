@@ -7,10 +7,13 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>AI Snow Day Predictor - Prediction</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
-    <!-- Background snowflakes -->
+    <div class="ai-credit">
+        🧠 Powered by<br><strong>Mistral Large</strong>
+    </div>
+
     <div class="snowflake" style="left: 15%; animation: float 8s linear infinite;">❄️</div>
     <div class="snowflake" style="left: 35%; animation: float 10s linear infinite 2s;">❄️</div>
     <div class="snowflake" style="left: 55%; animation: float 12s linear infinite 4s;">❄️</div>
@@ -22,9 +25,9 @@
         
         <h1>❄️ Snow Day Prediction</h1>
         <p id="locationDisplay"></p>
+        <p id="forecastTypeDisplay" style="color: #764ba2; font-size: 0.9em; margin-bottom: 5px;"></p>
         
         <div id="loadingSection" class="loading-section">
-            <!-- Progress Steps -->
             <div class="progress-steps">
                 <div class="step active" id="step-1">
                     <div class="step-circle">1</div>
@@ -44,7 +47,6 @@
                 </div>
             </div>
 
-            <!-- Progress Bar with percentage -->
             <div class="progress-container">
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill">0%</div>
@@ -54,7 +56,12 @@
         </div>
         
         <div id="predictionResult"></div>
+        <div id="dayNavigation" class="day-navigation" style="display: none;">
+            <button class="nav-button" id="prevDayBtn" onclick="showPreviousDay()">← Previous Day</button>
+            <div class="day-indicator" id="dayIndicator"></div>
+            <button class="nav-button" id="nextDayBtn" onclick="showNextDay()">Next Day →</button>
+        </div>
     </div>
-    <script src="prediction.js?v=6"></script>
+    <script src="prediction.js?v=8"></script>
 </body>
 </html>
