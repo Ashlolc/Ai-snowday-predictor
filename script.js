@@ -52,12 +52,19 @@ const statesAndCities = {
     "Wyoming": ["Cheyenne", "Casper", "Laramie", "Gillette", "Rock Springs"]
 };
 
+console.log('DEBUG: Script loaded - Version 2.0');
+
 // Initialize dropdowns on page load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DEBUG: DOMContentLoaded event fired.');
     
     const stateSelect = document.getElementById('state');
     const citySelect = document.getElementById('city');
+
+    if (!stateSelect || !citySelect) {
+        console.error('DEBUG: State or City select element not found!');
+        return;
+    }
 
     // Populate states
     Object.keys(statesAndCities).sort().forEach(state => {
@@ -66,6 +73,8 @@ document.addEventListener('DOMContentLoaded', function() {
         option.textContent = state;
         stateSelect.appendChild(option);
     });
+
+    console.log('DEBUG: All 50 states populated in dropdown');
 
     // When state is selected, populate cities
     stateSelect.addEventListener('change', function() {
