@@ -16,9 +16,6 @@ document.getElementById('submitKey').addEventListener('click', function() {
         sessionStorage.setItem('state', state);
         sessionStorage.setItem('city', city);
 
-        // Log the user's input for the AI to see
-        console.log('User Input:', { state, city });
-
         // First, get weather data from Open-Meteo API
         // Note: Replace with actual coordinates for the city and state
         const openMeteoUrl = `https://api.open-meteo.com/v1/forecast?latitude=35.6895&longitude=139.6917&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`;
@@ -30,6 +27,9 @@ document.getElementById('submitKey').addEventListener('click', function() {
                 // Here you would typically process the weather data and send it to the Mistral API
                 // For now, we'll just display the weather data
                 predictionResultElement.innerHTML = `<p>Weather data for ${city}, ${state}: ${JSON.stringify(data)}</p>`;
+
+                // Log the user's input for the AI to see after the API call is completed
+                console.log('User Input:', { state, city });
             })
             .catch(error => {
                 console.error('Error fetching weather data:', error);
