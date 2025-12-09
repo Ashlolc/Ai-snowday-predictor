@@ -30,6 +30,34 @@ document.getElementById('submitKey').addEventListener('click', function() {
 
                 // Log the user's input for the AI to see after the API call is completed
                 console.log('User Input:', { state, city });
+
+                // Make API call to Mistral AI Studio
+                const mistralUrl = 'https://api.mistral.ai/v1/chat/completions';
+                const mistralData = {
+                    model: 'mistral-tiny',
+                    messages: [
+                        { role: 'system', content: 'You are a helpful assistant.' },
+                        { role: 'user', content: `What is the weather like in ${city}, ${state}?` }
+                    ]
+                };
+
+                fetch(mistralUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(mistralData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Mistral API response:', data);
+                    predictionResultElement.innerHTML += `<p>Mistral API response: ${JSON.stringify(data)}</p>`;
+                })
+                .catch(error => {
+                    console.error('Error calling Mistral API:', error);
+                    predictionResultElement.innerHTML += `<p>Error calling Mistral API: ${error.message}</p>`;
+                });
             })
             .catch(error => {
                 console.error('Error fetching weather data:', error);
