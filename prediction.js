@@ -1,12 +1,23 @@
-console.log('%c🔥 Prediction.js loaded - Version 6.0 Professional Redesign', 'color: #667eea; font-weight: bold; font-size: 14px;');
+console.log('%c🔥 Prediction.js loaded - Version 6.1 Enhanced Error Handling', 'color: #667eea; font-weight: bold; font-size: 14px;');
 
 // Progress tracking
 let currentProgress = 0;
 let currentStep = 1;
 let timeoutHandle;
 let animationInterval;
+let errorLog = [];
 
 const TIMEOUT_MS = 30000; // 30 seconds
+
+// Add visible error logging
+function logError(message) {
+    errorLog.push(message);
+    console.error(`%c❌ ${message}`, 'color: #ff6b6b; font-weight: bold;');
+}
+
+function logSuccess(message) {
+    console.log(`%c✓ ${message}`, 'color: #667eea; font-weight: bold;');
+}
 
 // Smooth progress animation
 function setProgress(targetProgress, step = null, message = null) {
@@ -23,7 +34,6 @@ function setProgress(targetProgress, step = null, message = null) {
         console.log(`%c📊 ${message} (${targetProgress}%)`, 'color: #667eea; font-weight: bold;');
     }
 
-    // Animate to target progress
     const increment = (targetProgress - currentProgress) / 20;
     let currentValue = currentProgress;
     
@@ -47,7 +57,6 @@ function updateProgressBar(percent) {
 }
 
 function updateSteps(activeStep) {
-    // Update completed steps
     for (let i = 1; i < activeStep; i++) {
         const step = document.getElementById(`step-${i}`);
         if (step) {
@@ -56,7 +65,6 @@ function updateSteps(activeStep) {
         }
     }
     
-    // Update active step
     const currentStepEl = document.getElementById(`step-${activeStep}`);
     if (currentStepEl) {
         currentStepEl.classList.remove('completed');
@@ -84,108 +92,132 @@ function stopProgressAnimation() {
 
 // Geocode API call
 async function getCoordinates(city, state) {
-    console.log(`%c📍 Geocoding: ${city}, ${state}`, 'color: #667eea;');
+    logSuccess(`Geocoding: ${city}, ${state}`);
     setProgress(20, 1, '📍 Locating your city...');
     
     try {
-        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=United%20States&count=1&language=en&format=json`;
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&admin1=${encodeURIComponent(state)}&country=US&count=1&language=en&format=json`;
+        logSuccess(`Geocoding URL: ${geoUrl}`);
         
         const response = await fetch(geoUrl);
-        if (!response.ok) throw new Error(`Geocoding API error: ${response.status}`);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            logError(`Geocoding API returned ${response.status}: ${errorText}`);
+            throw new Error(`Geocoding failed (HTTP ${response.status})`);
+        }
         
         const data = await response.json();
+        logSuccess(`Geocoding response received`);
         
-        if (data.results && data.results.length > 0) {
-            const result = data.results[0];
-            const coordinates = {
-                latitude: result.latitude,
-                longitude: result.longitude,
-                name: result.name,
-                state: result.admin1,
-                country: result.country
-            };
-            console.log(`%c✓ Coordinates found: (${coordinates.latitude}, ${coordinates.longitude})`, 'color: #667eea;');
-            setProgress(30, 1, `✓ Found ${result.name}!`);
-            return coordinates;
-        } else {
-            throw new Error(`No coordinates found for ${city}, ${state}`);
+        if (!data.results || data.results.length === 0) {
+            logError(`No results found for ${city}, ${state}`);
+            throw new Error(`Could not find coordinates for ${city}, ${state}`);
         }
+        
+        const result = data.results[0];
+        const coordinates = {
+            latitude: result.latitude,
+            longitude: result.longitude,
+            name: result.name,
+            state: result.admin1 || state,
+            country: result.country
+        };
+        
+        logSuccess(`Found coordinates: ${coordinates.latitude}, ${coordinates.longitude}`);
+        setProgress(30, 1, `✓ Found ${result.name}!`);
+        return coordinates;
     } catch (error) {
-        console.error(`%c❌ Geocoding error: ${error.message}`, 'color: #ff6b6b;');
-        throw error;
+        logError(`Geocoding error: ${error.message}`);
+        throw new Error(`📍 Location Error: ${error.message}`);
     }
 }
 
-// Weather API call
+// Weather API call with better error handling
 async function getWeatherData(latitude, longitude) {
-    console.log(`%c☁️ Fetching weather for (${latitude}, ${longitude})`, 'color: #667eea;');
+    logSuccess(`Fetching weather for (${latitude}, ${longitude})`);
     setProgress(45, 2, '☁️ Downloading 7-day forecast...');
     animateProgressToMax();
     
     try {
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall,wind_speed_10m_max&timezone=auto&forecast_days=7`;
+        // Round coordinates to 4 decimal places
+        const lat = parseFloat(latitude).toFixed(4);
+        const lon = parseFloat(longitude).toFixed(4);
+        
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall_sum,wind_speed_10m_max&temperature_unit=fahrenheit&wind_speed_unit=mph&precipitation_unit=inch&timezone=America%2FChicago&forecast_days=7`;
+        
+        logSuccess(`Weather API URL: ${weatherUrl}`);
         
         const response = await fetch(weatherUrl);
-        if (!response.ok) throw new Error(`Weather API error: ${response.status}`);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            logError(`Weather API returned ${response.status}: ${errorText}`);
+            throw new Error(`Weather API failed (HTTP ${response.status})`);
+        }
         
         const data = await response.json();
-        console.log(`%c✓ Weather data received (7 days)`, 'color: #667eea;');
+        
+        if (!data.daily) {
+            logError(`Invalid weather data structure received`);
+            throw new Error(`Weather API returned invalid data`);
+        }
+        
+        logSuccess(`Weather data received for 7 days`);
         setProgress(60, 2, `✓ Weather data ready!`);
         return data;
     } catch (error) {
-        console.error(`%c❌ Weather error: ${error.message}`, 'color: #ff6b6b;');
-        throw error;
+        logError(`Weather error: ${error.message}`);
+        throw new Error(`☁️ Weather Error: ${error.message}`);
     }
 }
 
 // AI Analysis
 async function analyzeSnowDayChance(city, state, weatherData, apiKey) {
-    console.log(`%c🤖 Analyzing with Mistral AI...`, 'color: #667eea;');
+    logSuccess(`Starting Mistral AI analysis`);
     setProgress(70, 3, '🤖 Sending weather data to Mistral AI...');
     animateProgressToMax();
     
     try {
-        const weatherSummary = weatherData.daily.weather_code
-            .slice(0, 7)
-            .map((code, index) => ({
-                day: index + 1,
-                date: weatherData.daily.time[index],
-                weatherCode: code,
-                maxTemp: weatherData.daily.temperature_2m_max[index],
-                minTemp: weatherData.daily.temperature_2m_min[index],
-                precipitation: weatherData.daily.precipitation_sum[index],
-                snowfall: weatherData.daily.snowfall[index],
-                windSpeed: weatherData.daily.wind_speed_10m_max[index]
-            }));
+        const weatherSummary = [];
+        for (let i = 0; i < 7; i++) {
+            weatherSummary.push({
+                day: i + 1,
+                date: weatherData.daily.time[i],
+                maxTemp: weatherData.daily.temperature_2m_max[i],
+                minTemp: weatherData.daily.temperature_2m_min[i],
+                precipitation: weatherData.daily.precipitation_sum[i],
+                snowfall: weatherData.daily.snowfall_sum[i],
+                windSpeed: weatherData.daily.wind_speed_10m_max[i]
+            });
+        }
         
-        const prompt = `You are an expert meteorologist and snow day prediction specialist. Analyze this detailed 7-day weather forecast for ${city}, ${state} and provide a comprehensive snow day prediction.
+        logSuccess(`Weather summary prepared for AI`);
+        
+        const prompt = `You are an expert meteorologist specializing in snow day predictions. Analyze this 7-day forecast for ${city}, ${state}:
 
-Weather Forecast:
 ${JSON.stringify(weatherSummary, null, 2)}
 
-Provide a detailed analysis including:
-1. **Snow Day Probability**: Percentage chance (0-100%) of school closure due to snow in next 7 days
-2. **Most Likely Day**: Which day is most probable for snow conditions
-3. **Weather Analysis**: Detailed reasoning based on temperatures, precipitation, snowfall, and wind
-4. **Key Factors**: Specific conditions that would trigger school closure (snow accumulation, ice, visibility)
-5. **Confidence Level**: How confident you are in this prediction
+Provide:
+1. **Snow Day Probability** (0-100%)
+2. **Most Likely Day** for snow
+3. **Analysis** of temperatures, snowfall, wind
+4. **School Closure Factors** (accumulation, ice, visibility)
+5. **Confidence Level**
 
-Be specific, use the actual data provided, and format clearly.`;
+Be specific and data-driven.`;
         
         const requestBody = {
             model: 'mistral-small-latest',
             messages: [
-                { 
-                    role: 'system', 
-                    content: 'You are a professional weather forecaster specializing in snow day predictions for schools. Provide detailed, data-driven analysis.'
-                },
+                { role: 'system', content: 'You are a professional weather forecaster for school closures.' },
                 { role: 'user', content: prompt }
             ],
             temperature: 0.5,
             max_tokens: 800
         };
         
-        console.log(`%c💮 Request prepared, calling Mistral API...`, 'color: #667eea;');
+        logSuccess(`Calling Mistral API with model: mistral-small-latest`);
         setProgress(75, 3, `⏳ Waiting for AI analysis...`);
         
         const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
@@ -198,29 +230,38 @@ Be specific, use the actual data provided, and format clearly.`;
         });
         
         if (!response.ok) {
-            const errorData = await response.text();
-            throw new Error(`Mistral API error ${response.status}: ${errorData}`);
+            const errorText = await response.text();
+            logError(`Mistral API returned ${response.status}: ${errorText}`);
+            
+            if (response.status === 401) {
+                throw new Error(`Invalid API key. Get a new key from console.mistral.ai`);
+            } else if (response.status === 429) {
+                throw new Error(`Rate limit exceeded. Wait a minute and try again.`);
+            } else {
+                throw new Error(`Mistral API error (HTTP ${response.status})`);
+            }
         }
         
         const data = await response.json();
         
         if (!data.choices || !data.choices[0]) {
-            throw new Error('Invalid response from Mistral API');
+            logError(`Invalid Mistral API response structure`);
+            throw new Error(`Mistral API returned invalid response`);
         }
         
         const analysis = data.choices[0].message.content;
-        console.log(`%c✓ AI analysis complete!`, 'color: #667eea;');
+        logSuccess(`AI analysis complete!`);
         setProgress(95, 3, `✓ Analysis complete!`);
         return analysis;
     } catch (error) {
-        console.error(`%c❌ AI error: ${error.message}`, 'color: #ff6b6b;');
-        throw error;
+        logError(`AI error: ${error.message}`);
+        throw new Error(`🤖 AI Error: ${error.message}`);
     }
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('%c🚀 Prediction page loaded', 'color: #667eea; font-weight: bold;');
+    logSuccess('Prediction page loaded');
     
     const apiKey = sessionStorage.getItem('mistralApiKey');
     const state = sessionStorage.getItem('state');
@@ -233,18 +274,19 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Validation
     if (!apiKey || !location || !state || !city) {
-        console.error('%c❌ Missing required data', 'color: #ff6b6b; font-weight: bold;');
-        clearTimeout(timeoutHandle);
+        logError('Missing required data from previous page');
         alert('Please enter your location and API key on the main page.');
         window.location.href = 'index.html';
         return;
     }
     
+    logSuccess(`Location: ${location}`);
+    logSuccess(`API Key length: ${apiKey.length} characters`);
     locationDisplay.innerHTML = `<p style="font-size: 1.1em; color: #667eea; font-weight: 600;">📍 ${location}</p>`;
     
     // Set timeout
     timeoutHandle = setTimeout(() => {
-        console.error('%c❌ TIMEOUT: Analysis exceeded 30 seconds', 'color: #ff6b6b; font-weight: bold;');
+        logError('TIMEOUT: Analysis exceeded 30 seconds');
         stopProgressAnimation();
         updateProgressBar(100);
         
@@ -252,25 +294,27 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         predictionResult.innerHTML = `
             <div class="error-box">
-                <h3>⏰ Request Timeout</h3>
-                <p>The prediction analysis took longer than 30 seconds.</p>
-                <p><strong>Common causes:</strong></p>
+                <h3>⏰ Request Timeout (30s)</h3>
+                <p>The prediction took too long.</p>
+                <p><strong>Possible causes:</strong></p>
                 <ul>
-                    <li>🚫 Mistral API is slow or unresponsive</li>
+                    <li>🚫 Mistral API is slow/down</li>
                     <li>🌐 Slow internet connection</li>
-                    <li>🔑 Invalid or rate-limited API key</li>
-                    <li>📋 API quota exceeded</li>
+                    <li>🔑 API key rate limited</li>
                 </ul>
+                <details style="margin-top: 15px; background: #fff; padding: 10px; border-radius: 6px;">
+                    <summary style="cursor: pointer; font-weight: 600;">🐛 Error Log (Click to expand)</summary>
+                    <pre style="margin-top: 10px; font-size: 0.85em; color: #666; white-space: pre-wrap;">${errorLog.join('\n')}</pre>
+                </details>
                 <p style="margin-top: 15px;">
                     <button class="back-button" onclick="window.location.href='index.html'">← Try Again</button>
                 </p>
-                <p style="color: #999; font-size: 0.85em; margin-top: 15px;">Press F12 and check Console for details.</p>
             </div>
         `;
     }, TIMEOUT_MS);
     
     try {
-        console.log('%c🚀 Starting prediction workflow...', 'color: #667eea; font-weight: bold;');
+        logSuccess('Starting prediction workflow');
         setProgress(10, 1, '🙋 Initializing...');
         
         // Step 1: Geocode
@@ -302,16 +346,16 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <div style="white-space: pre-wrap; line-height: 1.8; color: #555;">${escapeHtml(analysis)}</div>
                 <hr>
                 <p style="color: #999; font-size: 0.9em; margin-top: 15px;">
-                    📚 Data Sources: Open-Meteo API | 🤖 Analysis: Mistral AI<br>
+                    📚 Data: Open-Meteo API | 🤖 AI: Mistral (mistral-small-latest)<br>
                     📍 Location: ${coordinates.name}, ${coordinates.state}
                 </p>
             </div>
         `;
         
-        console.log('%c✓ Prediction complete and displayed!', 'color: #667eea; font-weight: bold; font-size: 14px;');
+        logSuccess('Prediction complete!');
         
     } catch (error) {
-        console.error(`%c❌ Error: ${error.message}`, 'color: #ff6b6b; font-weight: bold;');
+        logError(`Final error: ${error.message}`);
         stopProgressAnimation();
         clearTimeout(timeoutHandle);
         
@@ -320,18 +364,21 @@ document.addEventListener('DOMContentLoaded', async function() {
         predictionResult.innerHTML = `
             <div class="error-box">
                 <h3>❌ Prediction Failed</h3>
-                <p><strong>Error:</strong> ${escapeHtml(error.message)}</p>
-                <p><strong>Troubleshooting:</strong></p>
+                <p style="font-size: 1.1em; color: #ff6b6b; font-weight: 600;">${escapeHtml(error.message)}</p>
+                <p><strong>What to check:</strong></p>
                 <ul>
-                    <li>🔑 Verify API key at console.mistral.ai</li>
-                    <li>📍 Ensure city is selected from dropdown</li>
-                    <li>🚫 Check if API quota/rate limit exceeded</li>
-                    <li>🌐 Verify internet connection</li>
+                    <li>🔑 API key valid at <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a></li>
+                    <li>📍 City selected from dropdown</li>
+                    <li>🌐 Internet connection working</li>
+                    <li>📋 API not rate-limited</li>
                 </ul>
+                <details style="margin-top: 15px; background: #fff; padding: 10px; border-radius: 6px;">
+                    <summary style="cursor: pointer; font-weight: 600;">🐛 Full Error Log (Click to expand)</summary>
+                    <pre style="margin-top: 10px; font-size: 0.85em; color: #666; white-space: pre-wrap;">${errorLog.join('\n')}</pre>
+                </details>
                 <p style="margin-top: 15px;">
                     <button class="back-button" onclick="window.location.href='index.html'">← Try Again</button>
                 </p>
-                <p style="color: #999; font-size: 0.85em; margin-top: 15px;">Debug info: Press F12 → Console for full error details.</p>
             </div>
         `;
     }
