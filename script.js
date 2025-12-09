@@ -52,19 +52,19 @@ const statesAndCities = {
     "Wyoming": ["Cheyenne", "Casper", "Laramie", "Gillette", "Rock Springs"]
 };
 
-console.log('%c🔥 Script loaded - Version 6.0 Complete Redesign', 'color: #667eea; font-weight: bold; font-size: 14px;');
+console.log('%c🔥 Script V8.0 - Forecast Type Selection', 'color: #667eea; font-weight: bold; font-size: 14px;');
 
-// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('%c✓ DOMContentLoaded - Initializing', 'color: #667eea; font-weight: bold;');
     
     const stateSelect = document.getElementById('state');
     const citySelect = document.getElementById('city');
+    const forecastTypeSelect = document.getElementById('forecastType');
     const submitButton = document.getElementById('submitKey');
     const apiKeyInput = document.getElementById('apiKey');
 
-    if (!stateSelect || !citySelect) {
-        console.error('❌ State or City select element not found!');
+    if (!stateSelect || !citySelect || !forecastTypeSelect) {
+        console.error('❌ Required elements not found!');
         return;
     }
 
@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 citySelect.appendChild(option);
             });
             citySelect.disabled = false;
-            console.log(`✓ Cities populated for ${selectedState}: ${cities.length} cities`);
+            console.log(`✓ Cities populated: ${cities.length} cities`);
         } else {
             const option = document.createElement('option');
             option.value = '';
@@ -106,24 +106,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Submit handler
     submitButton.addEventListener('click', handleSubmit);
-    
-    // Allow Enter key to submit
     apiKeyInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            handleSubmit();
-        }
+        if (e.key === 'Enter') handleSubmit();
     });
 
     function handleSubmit() {
         const state = stateSelect.value.trim();
         const city = citySelect.value.trim();
+        const forecastType = forecastTypeSelect.value;
         const apiKey = apiKeyInput.value.trim();
 
-        console.log(`📤 Submit attempted - State: ${state}, City: ${city}, API Key: ${apiKey ? '✓ Provided' : '❌ Missing'}`);
+        console.log(`📤 Submit: ${city}, ${state} | Forecast: ${forecastType} | API Key: ${apiKey ? '✓' : '❌'}`);
 
-        // Validation
         if (!state || !city || !apiKey) {
-            console.warn('⚠️ Validation failed - Missing required values');
+            console.warn('⚠️ Validation failed');
             alert('Please select your state, city, and enter your Mistral API key.');
             return;
         }
@@ -133,14 +129,13 @@ document.addEventListener('DOMContentLoaded', function() {
         sessionStorage.setItem('state', state);
         sessionStorage.setItem('city', city);
         sessionStorage.setItem('location', `${city}, ${state}`);
+        sessionStorage.setItem('forecastType', forecastType);
         
-        console.log('%c🚀 Data stored and redirecting to prediction page...', 'color: #667eea; font-weight: bold;');
+        console.log(`%c🚀 Stored forecast type: ${forecastType}`, 'color: #667eea; font-weight: bold;');
 
-        // Disable button during redirect
         submitButton.disabled = true;
         submitButton.textContent = '⏳ Loading...';
 
-        // Redirect with slight delay for visual feedback
         setTimeout(() => {
             window.location.href = 'prediction.html';
         }, 300);
