@@ -52,51 +52,50 @@ const statesAndCities = {
     "Wyoming": ["Cheyenne", "Casper", "Laramie", "Gillette", "Rock Springs"]
 };
 
-console.log('DEBUG: Script loaded - Version 4.0');
+console.log('%c🔥 Script loaded - Version 6.0 Complete Redesign', 'color: #667eea; font-weight: bold; font-size: 14px;');
 
-// Initialize dropdowns on page load
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DEBUG: DOMContentLoaded event fired.');
+    console.log('%c✓ DOMContentLoaded - Initializing', 'color: #667eea; font-weight: bold;');
     
     const stateSelect = document.getElementById('state');
     const citySelect = document.getElementById('city');
+    const submitButton = document.getElementById('submitKey');
+    const apiKeyInput = document.getElementById('apiKey');
 
     if (!stateSelect || !citySelect) {
-        console.error('DEBUG: State or City select element not found!');
+        console.error('❌ State or City select element not found!');
         return;
     }
 
     // Populate states
-    Object.keys(statesAndCities).sort().forEach(state => {
+    const states = Object.keys(statesAndCities).sort();
+    states.forEach(state => {
         const option = document.createElement('option');
         option.value = state;
         option.textContent = state;
         stateSelect.appendChild(option);
     });
+    console.log(`✓ Populated ${states.length} states`);
 
-    console.log('DEBUG: All 50 states populated in dropdown');
-
-    // When state is selected, populate cities
+    // State change handler
     stateSelect.addEventListener('change', function() {
         const selectedState = this.value;
-        console.log('DEBUG: State selected:', selectedState);
+        console.log(`📍 State selected: ${selectedState}`);
         
-        // Clear city dropdown
         citySelect.innerHTML = '';
         
         if (selectedState) {
-            // Enable city dropdown and populate with cities
-            const cities = statesAndCities[selectedState];
-            cities.sort().forEach(city => {
+            const cities = statesAndCities[selectedState].sort();
+            cities.forEach(city => {
                 const option = document.createElement('option');
                 option.value = city;
                 option.textContent = city;
                 citySelect.appendChild(option);
             });
             citySelect.disabled = false;
-            console.log('DEBUG: Cities populated for', selectedState, ':', cities);
+            console.log(`✓ Cities populated for ${selectedState}: ${cities.length} cities`);
         } else {
-            // Reset city dropdown
             const option = document.createElement('option');
             option.value = '';
             option.textContent = '-- Choose a state first --';
@@ -105,57 +104,45 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Check if elements exist
-    if (!document.getElementById('submitKey')) {
-        console.error('DEBUG: Submit button not found.');
-    }
-    if (!document.getElementById('apiKey')) {
-        console.error('DEBUG: API key input not found.');
-    }
-    if (!document.getElementById('loading')) {
-        console.error('DEBUG: Loading element not found.');
-    }
-});
-
-// Main submit button handler
-document.getElementById('submitKey').addEventListener('click', function() {
-    console.log('DEBUG: Submit button clicked.');
-
-    const state = document.getElementById('state').value.trim();
-    const city = document.getElementById('city').value.trim();
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const loadingElement = document.getElementById('loading');
-
-    console.log('DEBUG: State value:', state);
-    console.log('DEBUG: City value:', city);
-    console.log('DEBUG: API key provided:', apiKey ? 'Yes (length: ' + apiKey.length + ')' : 'No');
-
-    // Validation
-    if (!state || !city || !apiKey) {
-        console.error('DEBUG: Missing required values.');
-        alert('Please select your state, city, and enter your Mistral API key.');
-        return;
-    }
-
-    // Show loading state
-    loadingElement.style.display = 'block';
-    console.log('DEBUG: Loading state shown. Storing to sessionStorage and redirecting...');
-
-    // Store values in sessionStorage
-    sessionStorage.setItem('mistralApiKey', apiKey);
-    sessionStorage.setItem('state', state);
-    sessionStorage.setItem('city', city);
-    sessionStorage.setItem('location', city + ', ' + state);
+    // Submit handler
+    submitButton.addEventListener('click', handleSubmit);
     
-    console.log('DEBUG: Values stored in sessionStorage:');
-    console.log('  - State:', state);
-    console.log('  - City:', city);
-    console.log('  - Location:', city + ', ' + state);
-    console.log('  - API Key length:', apiKey.length);
-    console.log('DEBUG: Redirecting to prediction.html...');
+    // Allow Enter key to submit
+    apiKeyInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            handleSubmit();
+        }
+    });
 
-    // Redirect to prediction page
-    setTimeout(() => {
-        window.location.href = 'prediction.html';
-    }, 500);
+    function handleSubmit() {
+        const state = stateSelect.value.trim();
+        const city = citySelect.value.trim();
+        const apiKey = apiKeyInput.value.trim();
+
+        console.log(`📤 Submit attempted - State: ${state}, City: ${city}, API Key: ${apiKey ? '✓ Provided' : '❌ Missing'}`);
+
+        // Validation
+        if (!state || !city || !apiKey) {
+            console.warn('⚠️ Validation failed - Missing required values');
+            alert('Please select your state, city, and enter your Mistral API key.');
+            return;
+        }
+
+        // Store in sessionStorage
+        sessionStorage.setItem('mistralApiKey', apiKey);
+        sessionStorage.setItem('state', state);
+        sessionStorage.setItem('city', city);
+        sessionStorage.setItem('location', `${city}, ${state}`);
+        
+        console.log('%c🚀 Data stored and redirecting to prediction page...', 'color: #667eea; font-weight: bold;');
+
+        // Disable button during redirect
+        submitButton.disabled = true;
+        submitButton.textContent = '⏳ Loading...';
+
+        // Redirect with slight delay for visual feedback
+        setTimeout(() => {
+            window.location.href = 'prediction.html';
+        }, 300);
+    }
 });
