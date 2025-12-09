@@ -27,13 +27,44 @@
             font-size: 0.9em;
             color: #555;
         }
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #4CAF50;
             box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
         }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Roboto', sans-serif;
+            background-color: white;
+            cursor: pointer;
+        }
+        select:disabled {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+            color: #999;
+        }
+        .selector-group {
+            display: flex;
+            gap: 10px;
+            margin: 8px 0;
+        }
+        .selector-group select {
+            flex: 1;
+            margin: 0;
+        }
         button {
             margin-top: 10px;
+        }
+        .state-label, .city-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
         }
     </style>
 </head>
@@ -46,8 +77,16 @@
             ⚠️ <strong>Get your Mistral API key:</strong> Visit <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a>
         </div>
 
-        <input type="text" id="state" placeholder="Enter your state (e.g., Minnesota)" />
-        <input type="text" id="city" placeholder="Enter your city (e.g., Sartell)" />
+        <label class="state-label">Select State</label>
+        <select id="state">
+            <option value="">-- Choose a state --</option>
+        </select>
+
+        <label class="city-label">Select City</label>
+        <select id="city" disabled>
+            <option value="">-- Choose a state first --</option>
+        </select>
+        
         <input type="password" id="apiKey" placeholder="Enter your Mistral API key" />
         
         <button id="submitKey">🔍 Analyze Weather</button>
