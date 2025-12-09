@@ -1,8 +1,55 @@
-console.log('DEBUG: Prediction.js loaded - Version 4.0');
+console.log('DEBUG: Prediction.js loaded - Version 5.0');
+
+// Progress tracking variables
+let progressInterval;
+let currentProgress = 0;
+let timeoutHandle;
+
+// Update progress bar
+function updateProgress(newProgress, statusMessage) {
+    currentProgress = Math.min(newProgress, 99);
+    const progressFill = document.getElementById('progressFill');
+    const statusText = document.getElementById('statusText');
+    
+    if (progressFill) {
+        progressFill.style.width = currentProgress + '%';
+        progressFill.textContent = currentProgress + '%';
+    }
+    
+    if (statusText && statusMessage) {
+        statusText.textContent = statusMessage;
+    }
+    
+    console.log('DEBUG: Progress updated to', currentProgress + '%', '-', statusMessage);
+}
+
+// Start animated progress (for long-running operations)
+function startAnimatedProgress() {
+    console.log('DEBUG: Starting animated progress...');
+    progressInterval = setInterval(() => {
+        if (currentProgress < 90) {
+            currentProgress += Math.random() * 10;
+            const progressFill = document.getElementById('progressFill');
+            if (progressFill) {
+                progressFill.style.width = Math.min(currentProgress, 90) + '%';
+                progressFill.textContent = Math.floor(Math.min(currentProgress, 90)) + '%';
+            }
+        }
+    }, 800);
+}
+
+// Stop animated progress
+function stopAnimatedProgress() {
+    if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+}
 
 // Function to geocode city/state to coordinates
 async function getCoordinates(city, state) {
     console.log('DEBUG: Starting geocoding for:', city, state);
+    updateProgress(15, '📍 Locating your city...');
     
     try {
         const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&state=${state}&country=United%20States&count=1&language=en&format=json`;
@@ -28,6 +75,7 @@ async function getCoordinates(city, state) {
                 country: result.country
             };
             console.log('DEBUG: Coordinates found:', coordinates);
+            updateProgress(25, '✓ Location found! Fetching weather data...');
             return coordinates;
         } else {
             throw new Error(`No results found for ${city}, ${state}`);
@@ -41,6 +89,7 @@ async function getCoordinates(city, state) {
 // Function to get weather data from Open-Meteo
 async function getWeatherData(latitude, longitude) {
     console.log('DEBUG: Fetching weather data for coordinates:', latitude, longitude);
+    updateProgress(40, '☁️ Downloading weather forecast...');
     
     try {
         const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,snowfall&timezone=auto&forecast_days=7`;
@@ -55,6 +104,7 @@ async function getWeatherData(latitude, longitude) {
         
         const data = await response.json();
         console.log('DEBUG: Weather data received:', data);
+        updateProgress(60, '✓ Weather data received! Analyzing with AI...');
         return data;
     } catch (error) {
         console.error('DEBUG: Weather fetch error:', error);
@@ -67,6 +117,7 @@ async function analyzeSnowDayChance(city, state, weatherData, apiKey) {
     console.log('DEBUG: Analyzing snow day chance with Mistral AI');
     console.log('DEBUG: City:', city, 'State:', state);
     console.log('DEBUG: API Key length:', apiKey.length, 'characters');
+    updateProgress(70, '🤖 Sending data to Mistral AI...');
     
     try {
         // Format weather data for AI analysis
@@ -111,6 +162,7 @@ Be concise and specific.`;
         };
         
         console.log('DEBUG: Mistral request prepared');
+        updateProgress(80, '⏳ Waiting for AI analysis...');
         
         const response = await fetch(mistralUrl, {
             method: 'POST',
@@ -131,6 +183,7 @@ Be concise and specific.`;
         
         const data = await response.json();
         console.log('DEBUG: Mistral AI response:', data);
+        updateProgress(95, '✓ Analysis complete!');
         
         if (data.choices && data.choices[0]) {
             return data.choices[0].message.content;
@@ -152,18 +205,45 @@ document.addEventListener('DOMContentLoaded', async function() {
     const city = sessionStorage.getItem('city');
     const location = sessionStorage.getItem('location');
     
-    const loadingElement = document.getElementById('loading');
+    const loadingSection = document.getElementById('loadingSection');
     const predictionResultElement = document.getElementById('predictionResult');
     const locationDisplay = document.getElementById('locationDisplay');
     
     console.log('DEBUG: Retrieved from sessionStorage:');
     console.log('  - Location:', location);
-    console.log('  - State:', state);
-    console.log('  - City:', city);
-    console.log('  - API Key length:', apiKey ? apiKey.length : 'None');
+    console.log('DEBUG: Starting 30-second timeout...');
+    
+    // Set 30-second timeout
+    timeoutHandle = setTimeout(() => {
+        console.error('DEBUG: TIMEOUT - Prediction took longer than 30 seconds!');
+        stopAnimatedProgress();
+        
+        if (loadingSection) {
+            loadingSection.style.display = 'none';
+        }
+        
+        predictionResultElement.innerHTML = `
+            <div class="error-box">
+                <h3>⏰ Timeout Error</h3>
+                <p><strong>The prediction took too long (30+ seconds).</strong></p>
+                <p>This usually happens when:</p>
+                <ul style="text-align: left; color: #666; font-size: 0.9em;">
+                    <li>🚫 Mistral API is slow or not responding</li>
+                    <li>🌐 Your internet connection is slow</li>
+                    <li>🔑 Your API key might be invalid</li>
+                    <li>📋 API rate limit exceeded - wait a minute</li>
+                </ul>
+                <p style="margin-top: 15px;">
+                    <button class="back-button" onclick="window.location.href='index.html'">← Try Again</button>
+                </p>
+                <p style="color: #999; font-size: 0.85em; margin-top: 15px;">Check console (F12) for detailed error logs.</p>
+            </div>
+        `;
+    }, 30000); // 30 seconds
     
     if (!apiKey || !location || !state || !city) {
         console.error('DEBUG: Missing required data. Redirecting to index.html');
+        clearTimeout(timeoutHandle);
         alert('Please enter your location and API key on the main page.');
         window.location.href = 'index.html';
         return;
@@ -172,9 +252,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Display location
     locationDisplay.innerHTML = `<p style="font-size: 1.1em; color: #667eea;"><strong>${location}</strong></p>`;
     
-    // Show loading state
-    loadingElement.style.display = 'block';
-    predictionResultElement.innerHTML = '<p>Loading... analyzing weather patterns...</p>';
+    // Start initial progress
+    updateProgress(5, 'Starting analysis...');
+    startAnimatedProgress();
     
     try {
         console.log('DEBUG: Starting prediction analysis flow...');
@@ -182,16 +262,23 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Step 1: Get coordinates
         console.log('DEBUG: Step 1 - Getting coordinates...');
         const coordinates = await getCoordinates(city, state);
-        predictionResultElement.innerHTML = `<p>📍 Found ${coordinates.name}, ${coordinates.state}</p><p>Fetching weather data...</p>`;
         
         // Step 2: Get weather data
         console.log('DEBUG: Step 2 - Getting weather data...');
         const weatherData = await getWeatherData(coordinates.latitude, coordinates.longitude);
-        predictionResultElement.innerHTML += `<p>📊 Weather data retrieved. Analyzing with AI...</p>`;
         
         // Step 3: Analyze with Mistral AI
         console.log('DEBUG: Step 3 - Analyzing with Mistral AI for snow day prediction...');
+        stopAnimatedProgress();
         const analysis = await analyzeSnowDayChance(city, state, weatherData, apiKey);
+        
+        // Clear timeout since we completed successfully
+        clearTimeout(timeoutHandle);
+        
+        // Hide loading section
+        if (loadingSection) {
+            loadingSection.style.display = 'none';
+        }
         
         // Display results
         predictionResultElement.innerHTML = `
@@ -208,6 +295,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         
     } catch (error) {
         console.error('DEBUG: Error in prediction flow:', error);
+        stopAnimatedProgress();
+        clearTimeout(timeoutHandle);
+        
+        // Hide loading section
+        if (loadingSection) {
+            loadingSection.style.display = 'none';
+        }
+        
         predictionResultElement.innerHTML = `
             <div class="error-box">
                 <h3>❌ Error</h3>
@@ -215,15 +310,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <p style="color: #666; font-size: 0.9em; margin-top: 15px;">Check the browser console (F12) for detailed debugging information.</p>
                 <p style="color: #666; font-size: 0.85em;">Common issues:</p>
                 <ul style="text-align: left; color: #666; font-size: 0.9em;">
-                    <li>Invalid API key - check console.mistral.ai</li>
-                    <li>City/State not found - try selecting from dropdown</li>
-                    <li>API rate limit - wait a minute and try again</li>
+                    <li>❌ Invalid API key - check console.mistral.ai</li>
+                    <li>❌ City/State not found - try selecting from dropdown</li>
+                    <li>❌ API rate limit - wait a minute and try again</li>
+                    <li>❌ No internet connection</li>
                 </ul>
+                <p style="margin-top: 15px;">
+                    <button class="back-button" onclick="window.location.href='index.html'">← Try Again</button>
+                </p>
             </div>
         `;
-    } finally {
-        // Hide loading animation
-        loadingElement.style.display = 'none';
-        console.log('DEBUG: Prediction page analysis complete.');
     }
 });
