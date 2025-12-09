@@ -7,10 +7,13 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>AI Snow Day Predictor</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
-    <!-- Background snowflakes -->
+    <div class="ai-credit">
+        🧠 Powered by<br><strong>Mistral Large</strong>
+    </div>
+
     <div class="snowflake" style="left: 10%; animation: float 8s linear infinite;">❄️</div>
     <div class="snowflake" style="left: 20%; animation: float 10s linear infinite 2s;">❄️</div>
     <div class="snowflake" style="left: 30%; animation: float 12s linear infinite 4s;">❄️</div>
@@ -44,6 +47,14 @@
         </div>
 
         <div class="label-group">
+            <label class="forecast-label">📅 Forecast Type</label>
+            <select id="forecastType" aria-label="Forecast type selection">
+                <option value="1day">Tomorrow Only (1-Day)</option>
+                <option value="7day" selected>Full Week (7-Day with Navigation)</option>
+            </select>
+        </div>
+
+        <div class="label-group">
             <label class="api-label">🔑 Mistral API Key</label>
             <input type="password" id="apiKey" placeholder="Enter your Mistral API key" aria-label="API key input" />
         </div>
@@ -51,9 +62,9 @@
         <button id="submitKey">🔍 Analyze Weather</button>
         
         <div class="info-box" style="margin-top: 25px;">
-            <strong>💡 How it works:</strong> Select your location and enter your API key. We'll fetch real weather data and use AI to predict snow days.
+            <strong>💡 How it works:</strong> Select your location and forecast type. For 7-Day mode, navigate through each day with Previous/Next buttons!
         </div>
     </div>
-    <script src="script.js?v=6"></script>
+    <script src="script.js?v=8"></script>
 </body>
 </html>
