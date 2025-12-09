@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <title>AI Snow Day Predictor</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=4">
     <style>
         .snowflake {
             font-size: 3em;
@@ -28,10 +28,12 @@
             font-size: 0.9em;
             color: #555;
         }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+        .state-label, .city-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            display: block;
+            text-align: left;
         }
         select {
             width: 100%;
@@ -47,16 +49,6 @@
             background-color: #f0f0f0;
             cursor: not-allowed;
             color: #999;
-        }
-        button {
-            margin-top: 10px;
-        }
-        .state-label, .city-label {
-            font-size: 0.85em;
-            color: #666;
-            margin-bottom: 5px;
-            display: block;
-            text-align: left;
         }
     </style>
 </head>
@@ -84,13 +76,12 @@
         <button id="submitKey">🔍 Analyze Weather</button>
         
         <div id="loading" class="snowflake">❄️</div>
-        <div id="predictionResult"></div>
         
         <div class="info-box">
-            <strong>💡 How it works:</strong> We fetch real weather data for your location and use AI to analyze the chance of a snow day.
+            <strong>💡 How it works:</strong> Select your location and enter your API key. We'll fetch real weather data and use AI to predict snow days.
             All API keys are stored only in your browser session and never sent to external servers.
         </div>
     </div>
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=4"></script>
 </body>
 </html>
